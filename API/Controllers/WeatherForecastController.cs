@@ -1,6 +1,6 @@
-
 using Domain;
 using Microsoft.AspNetCore.Mvc;
+using Persistence;
 
 namespace API.Controllers;
 
@@ -8,6 +8,13 @@ namespace API.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
+    private readonly DataContext _context;
+
+    public WeatherForecastController(DataContext context)
+    {
+        _context = context;
+    }
+
     private static readonly string[] Summaries =
     [
         "Freezing", "Bracing", "Chilly", "Cool", "Mild",
@@ -23,5 +30,21 @@ public class WeatherForecastController : ControllerBase
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         });
+    }
+
+    [HttpPost]
+    public ActionResult<WeatherForecast> Post()
+    {
+        var forecast = new WeatherForecast
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = "Warm"
+        };
+
+        _context.WeatherForecasts.Add(forecast);
+        _context.SaveChanges();
+
+        return Ok(forecast);
     }
 }
